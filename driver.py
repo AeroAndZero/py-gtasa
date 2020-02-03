@@ -86,7 +86,7 @@ def check(edgeImage,point,direction):
     return distance
 
 time.sleep(7)
-paused = False
+paused = True
 gameLoop = 0
 limit = 10
 brakesOn = 15
