@@ -107,16 +107,10 @@ while True:
     edge = cv2.Canny(blur,100,120)
 
     if not paused:
+        
         if check(edge,FWControlPoint,"n") < 20:
             brake()
             print("Slow Down Brakes!")
-
-        '''
-        if forwardPress > 5 :
-            brake()
-            print("Too Much Forward Brakes!")
-            forwardPress = 0
-        '''
 
         if 0 < check(edge,FWControlPoint,"s") < 30:
             backward()
