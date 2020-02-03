@@ -86,7 +86,7 @@ def check(edgeImage,point,direction):
     return distance
 
 time.sleep(7)
-paused = False
+paused = True
 gameLoop = 0
 limit = 10
 brakesOn = 15
@@ -94,8 +94,16 @@ brakeLength = 10
 DiagonalThreshold = 50
 RLThreshold = 60
 
+#Line Detection Parameters
+rho = 0.5  # distance resolution in pixels of the Hough grid
+theta = np.pi / 180  # angular resolution in radians of the Hough grid
+threshold = 30  # minimum number of votes (intersections in Hough grid cell)
+min_line_length = 70  # minimum number of pixels making up a line
+max_line_gap = 20  # maximum gap in pixels between connectable line segments
+
 while True:
     img = grabscreen.grab_screen((0,0,640,480))
+    line_image = np.zeros_like(img)
     h,w = img.shape[0],img.shape[1]
     blur = cv2.GaussianBlur(img,(3,3),1)
     
@@ -105,6 +113,15 @@ while True:
     blur[0:h-1,RLControlPoint[0]-limit:RLControlPoint[0]+limit] = part_blur
 
     edge = cv2.Canny(blur,100,120)
+
+    lines = cv2.HoughLinesP(edge, rho, theta, threshold, np.array([]),
+                    min_line_length, max_line_gap)
+
+    for line in lines:
+        for x1,y1,x2,y2 in line:
+            cv2.line(line_image,(x1,y1),(x2,y2),(255,255,255),5)
+    cv2.circle(line_image,RLControlPoint,2,(0,0,255),3)
+    cv2.circle(line_image,FWControlPoint,2,(0,0,255),3)
 
     if not paused:
         if check(edge,FWControlPoint,"n") < 20:
@@ -139,7 +156,7 @@ while True:
     else:
         print("AI Paused")
 
-    cv2.imshow("Edges",edge)
+    cv2.imshow("Lines",line_image)
 
     keys = key_check()
     if 'P' in keys:
