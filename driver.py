@@ -6,8 +6,9 @@ import time
 from getkeys import key_check
 inputKeys = [W,A,S,D,SPACE]
 
-RLControlPoint = (320,340)
-FWControlPoint = (320,420)
+#RLControlPoint = (320,340)
+RLControlPoint = (320,360)
+FWControlPoint = (320,340)
 forwardPress = 0
 
 def forward():
@@ -80,6 +81,17 @@ def check(edgeImage,point,direction):
             pointX -= 1
             pointY -= 1
             distance += 1
+
+    elif direction == "nne":
+        while np.all(edgeImage[pointY,pointX] <= 200) and 0 <= pointY < edgeImage.shape[0]-1 and 0 <= pointX < edgeImage.shape[1]-1:
+            pointX += 2
+            pointY -= 1
+            distance += 1
+    elif direction == "nnw":
+        while np.all(edgeImage[pointY,pointX] <= 200) and 0 <= pointY < edgeImage.shape[0]-1 and 0 <= pointX < edgeImage.shape[1]-1:
+            pointX -= 1
+            pointY -= 2
+            distance += 1
     else:
         print("Invalid Direction")
 
@@ -91,15 +103,16 @@ gameLoop = 0
 limit = 10
 brakesOn = 15
 brakeLength = 10
-DiagonalThreshold = 50
-RLThreshold = 60
+DiagonalThreshold = 45
+superDiagonalThreshold = 20
+RLThreshold = 50
 
 #Line Detection Parameters
-rho = 0.5  # distance resolution in pixels of the Hough grid
+rho = 1  # distance resolution in pixels of the Hough grid
 theta = np.pi / 180  # angular resolution in radians of the Hough grid
-threshold = 30  # minimum number of votes (intersections in Hough grid cell)
-min_line_length = 70  # minimum number of pixels making up a line
-max_line_gap = 20  # maximum gap in pixels between connectable line segments
+threshold = 50  # minimum number of votes (intersections in Hough grid cell)
+min_line_length = 60  # minimum number of pixels making up a line
+max_line_gap = 10  # maximum gap in pixels between connectable line segments
 
 while True:
     img = grabscreen.grab_screen((0,0,640,480))
@@ -117,25 +130,19 @@ while True:
     lines = cv2.HoughLinesP(edge, rho, theta, threshold, np.array([]),
                     min_line_length, max_line_gap)
 
-    for line in lines:
-        for x1,y1,x2,y2 in line:
-            cv2.line(line_image,(x1,y1),(x2,y2),(255,255,255),5)
-    cv2.circle(line_image,RLControlPoint,2,(0,0,255),3)
-    cv2.circle(line_image,FWControlPoint,2,(0,0,255),3)
+    if lines is not None:
+        for line in lines:
+            for x1,y1,x2,y2 in line:
+                cv2.line(line_image,(x1,y1),(x2,y2),(255,255,255),5)
+    
+    processImage = line_image
 
     if not paused:
-        if check(edge,FWControlPoint,"n") < 20:
+        if check(processImage,FWControlPoint,"n") < 20:
             brake()
             print("Slow Down Brakes!")
 
-        '''
-        if forwardPress > 5 :
-            brake()
-            print("Too Much Forward Brakes!")
-            forwardPress = 0
-        '''
-
-        if 0 < check(edge,FWControlPoint,"s") < 30:
+        if 0 < check(processImage,FWControlPoint,"s") < 30:
             backward()
             print("Reverse")
         elif forwardPress > 5:
@@ -145,28 +152,33 @@ while True:
             forward()
             print("Forward")
 
-        if check(edge,RLControlPoint,"ne") < DiagonalThreshold or check(edge,RLControlPoint,"e") < RLThreshold:
+        if 10 < check(processImage,RLControlPoint,"ne") < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"e") < RLThreshold: #or check(processImage,RLControlPoint,"nne") < superDiagonalThreshold:
             left()
-            print("Went Left")
-        if check(edge,RLControlPoint,"nw") < DiagonalThreshold or check(edge,RLControlPoint,"w") < RLThreshold:
+            print("Left")
+
+        if 10 < check(processImage,RLControlPoint,"nw") < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"w") < RLThreshold: #or check(processImage,RLControlPoint,"nnw") < superDiagonalThreshold:
             right()
-            print("Went Right")
+            print("Right")
         
         gameLoop += 1
     else:
         print("AI Paused")
 
-    cv2.imshow("Lines",line_image)
+    cv2.circle(processImage,RLControlPoint,2,(0,0,255),3)
+    cv2.circle(processImage,FWControlPoint,2,(0,0,255),3)
+    cv2.imshow("Lines",processImage)
 
     keys = key_check()
     if 'P' in keys:
             if paused:
                 paused = False
+                time.sleep(1)
             else:
                 paused = True
                 ReleaseKey(A)
                 ReleaseKey(W)
                 ReleaseKey(D)
+                time.sleep(1)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
