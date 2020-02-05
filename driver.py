@@ -95,7 +95,7 @@ def check(edgeImage,point,direction):
     else:
         print("Invalid Direction")
 
-    return distance
+    return distance,pointX,pointX
 
 time.sleep(7)
 paused = True
@@ -115,6 +115,8 @@ min_line_length = 60  # minimum number of pixels making up a line
 max_line_gap = 10  # maximum gap in pixels between connectable line segments
 
 while True:
+    pointX,pointY = RLControlPoint
+
     img = grabscreen.grab_screen((0,0,640,480))
     line_image = np.zeros_like(img)
     h,w = img.shape[0],img.shape[1]
@@ -138,11 +140,11 @@ while True:
     processImage = line_image
 
     if not paused:
-        if check(processImage,FWControlPoint,"n") < 20:
+        if check(processImage,FWControlPoint,"n")[0] < 20:
             brake()
             print("Slow Down Brakes!")
 
-        if 0 < check(processImage,FWControlPoint,"s") < 30:
+        if 0 < check(processImage,FWControlPoint,"s")[0] < 30:
             backward()
             print("Reverse")
         elif forwardPress > 5:
@@ -152,13 +154,18 @@ while True:
             forward()
             print("Forward")
 
-        if 10 < check(processImage,RLControlPoint,"ne") < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"e") < RLThreshold: #or check(processImage,RLControlPoint,"nne") < superDiagonalThreshold:
+        if 10 < check(processImage,RLControlPoint,"ne")[0] < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"e")[0] < RLThreshold: #or check(processImage,RLControlPoint,"nne") < superDiagonalThreshold:
+            pointX,pointY = check(processImage,RLControlPoint,"ne")[1],check(processImage,RLControlPoint,"ne")[2]
             left()
             print("Left")
-
-        if 10 < check(processImage,RLControlPoint,"nw") < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"w") < RLThreshold: #or check(processImage,RLControlPoint,"nnw") < superDiagonalThreshold:
+            
+            cv2.line(processImage,(pointX,pointY),RLControlPoint,(0,0,255),2)
+        if 10 < check(processImage,RLControlPoint,"nw")[0] < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"w")[0] < RLThreshold: #or check(processImage,RLControlPoint,"nnw") < superDiagonalThreshold:
+            pointX,pointY = check(processImage,RLControlPoint,"nw")[1],check(processImage,RLControlPoint,"nw")[2]
             right()
             print("Right")
+            
+            cv2.line(processImage,(pointX,pointY),RLControlPoint,(0,0,255),2)
         
         gameLoop += 1
     else:
@@ -166,6 +173,7 @@ while True:
 
     cv2.circle(processImage,RLControlPoint,2,(0,0,255),3)
     cv2.circle(processImage,FWControlPoint,2,(0,0,255),3)
+
     cv2.imshow("Lines",processImage)
 
     keys = key_check()
