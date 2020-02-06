@@ -1,12 +1,12 @@
 # Self Driving Car using OpenCV (No AI implemented yet !)
  Current Task : Stay in same lane as longer as possible\
 ## Latest preview of this branch in-game : [YouTube](https://youtu.be/e3yZM15-OuE)
-**Here's a preview of how it works :**\
+**Here's a preview of how it works :**
  Line detection preview :\
-![Line Detection Image](/visuals/py-gtasa line detection gif.gif)  
+![Line Detection Image](visuals/py-gtasa line detection gif.gif)  
 \
  In-game preview :\
-![Original gameplay](/visuals/py-gtasa ingame preview gif.gif)  
+![Original gameplay](visuals/py-gtasa ingame preview gif.gif)  
 \
 The lower red pixel is RLcontrolPoint (controls steering of the vehicle) and the upper red point is FWcontrolPoint (controls speed of the vehicle (not fully implemented yet))
 - The first value of check() function returns the distance between the control Point and first white pixel it finds in a specific direction from the control point.
@@ -15,11 +15,11 @@ The lower red pixel is RLcontrolPoint (controls steering of the vehicle) and the
 - For FWControlPoint : if the distance in the north direction is less than some value than car apply brakes in order to avoid accident. and if it detects any line below FWcontrolPoint (because a car crashed into other car or object) it will take reverse.
 - FWcontrolPoint will be removed in future.
 #### Kind of a dumb algorithm but hey it works! Click on YouTube link for full preview.
-\
+  
 ## Dependencies :
 - OpenCV (pip install opencv-python)
 - pywin32 (pip install pywin32)
 - numpy (pip install numpy)
 - pynput (pip install pynput)
-- time
+- time   
   _**Made in python 3.7**_
