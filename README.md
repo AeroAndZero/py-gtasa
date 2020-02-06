@@ -2,10 +2,10 @@
  Current Task : Stay in same lane as longer as possible\
 ## Latest preview of this branch in-game : [YouTube](https://youtu.be/e3yZM15-OuE)
 **Here's a preview of how it works :**
- Line detection preview :\
-![Line Detection Image](visuals/py-gtasa line detection gif.gif)  
+ Line detection preview :   
+![Line detection](visuals/py-gtasa line detection gif.gif)
 \
- In-game preview :\
+ In-game preview :   
 ![Original gameplay](visuals/py-gtasa ingame preview gif.gif)  
 \
 The lower red pixel is RLcontrolPoint (controls steering of the vehicle) and the upper red point is FWcontrolPoint (controls speed of the vehicle (not fully implemented yet))
