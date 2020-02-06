@@ -1,5 +1,6 @@
 # Self Driving Car using OpenCV (No AI implemented yet !)
- Current Task : Stay in same lane as longer as possible
+ Important : Make sure you play in 640x480 resolution   
+Current Task : Stay in same lane as longer as possible
 ## Latest preview of this branch in-game : [YouTube](https://youtu.be/e3yZM15-OuE)
 **Here's a preview of how it works :**    
 \
