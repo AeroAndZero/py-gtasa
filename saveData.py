@@ -145,9 +145,9 @@ while True:
                 pass
 
         dists = [n_dist,s_dist,e_dist,w_dist,ne_dist,nw_dist]
-        print(keys,dists)
+        print(inputKeys,dists)
 
-        trainingData.append([dists,keys])
+        trainingData.append([dists,inputKeys])
         
         if gameLoop % 300 == 0:
             np.save(file_name,trainingData)
