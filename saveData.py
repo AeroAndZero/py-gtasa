@@ -87,7 +87,7 @@ while os.path.isfile(file_name):
 
 while True:
     #Syntax :
-    #[ [ [n,s,e,w],[w,a,s,d,space] ],... ]
+    #[ [ [n,s,e,w,ne,nw],[w,a,s,d,space] ],... ]
 
     # W = 0, A = 1, S = 3, D = 4, SPACE = 5
     inputKeys = [0,0,0,0,0]
