@@ -126,6 +126,13 @@ while True:
         ne_dist = check(processImage,FWControlPoint,"ne")
         nw_dist = check(processImage,FWControlPoint,"nw")
         keys = key_check()
+
+        #Don't want P key
+        try:
+            keys.remove('P')
+        except:
+            pass
+
         dists = [n_dist,s_dist,e_dist,w_dist,ne_dist,nw_dist]
         print(keys,dists)
 
