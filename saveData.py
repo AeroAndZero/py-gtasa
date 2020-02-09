@@ -4,49 +4,12 @@ import grabscreen
 from directkeys import PressKey, ReleaseKey, W, A, S, D, SPACE
 import time
 from getkeys import key_check
+import os
 inputKeys = [W,A,S,D,SPACE]
 
 #RLControlPoint = (320,340)
 RLControlPoint = (320,360)
 FWControlPoint = (320,340)
-forwardPress = 0
-
-#Basic movement operations
-def forward():
-    global forwardPress
-    releaseExcept(W)
-    PressKey(W)
-    forwardPress += 1
-
-def right():
-    ReleaseKey(A)
-    PressKey(D)
-
-def left():
-    ReleaseKey(D)
-    PressKey(A)
-
-def backward():
-    releaseExcept(S)
-    PressKey(S)
-
-def brake():
-    PressKey(SPACE)
-    PressKey(S)
-
-def releaseAll():
-    ReleaseKey(A)
-    ReleaseKey(W)
-    ReleaseKey(D)
-    ReleaseKey(S)
-    ReleaseKey(SPACE)
-
-def releaseExcept(key):
-    for inputKey in inputKeys:
-        if key == inputKey:
-            pass
-        else:
-            ReleaseKey(inputKey)
 
 #returns distance between control point and first white pixel is detects
 def check(edgeImage,point,direction):
@@ -97,10 +60,10 @@ def check(edgeImage,point,direction):
     else:
         print("Invalid Direction")
 
-    return distance,pointX,pointX
+    return distance
 
 #Global variables
-time.sleep(7)   #For giving some time before script start
+time.sleep(5)   #For giving some time before script start
 paused = True   #For pausing the game
 gameLoop = 0    #keeps track of total processed frames
 limit = 10      #for FWcontrolPoint part selection
@@ -114,9 +77,17 @@ threshold = 50  # minimum number of votes (intersections in Hough grid cell)
 min_line_length = 60  # minimum number of pixels making up a line
 max_line_gap = 10  # maximum gap in pixels between connectable line segments
 
+trainingData = []
+
+fileIndex = 1
+file_name = 'training_data-{}.npy'.format(fileIndex)
+while os.path.isfile(file_name):
+    fileIndex += 1
+    file_name = 'training_data-{}.npy'.format(fileIndex)
+
 while True:
-    #Resetting control points
-    pointX,pointY = RLControlPoint
+    #Syntax :
+    #[ [ [n,s,e,w],[w,a,s,d,space] ],... ]
 
     #Getting gameplay footage
     img = grabscreen.grab_screen((0,0,640,480))
@@ -124,9 +95,9 @@ while True:
     h,w = img.shape[0],img.shape[1]
     blur = cv2.GaussianBlur(img,(3,3),1)
     
-    #For FWcontrolPoint
+    #Blurring Center Part More
     central_part = img[0:h-1,RLControlPoint[0]-limit:RLControlPoint[0]+limit]
-    part_blur = cv2.GaussianBlur(central_part,(15,15),0)
+    part_blur = cv2.GaussianBlur(central_part,(11,11),0)
     blur[0:h-1,RLControlPoint[0]-limit:RLControlPoint[0]+limit] = part_blur
 
     #Acutal edge detection
@@ -147,51 +118,31 @@ while True:
 
     #Condition checking
     if not paused:
-        #For slowing down
-        if check(processImage,FWControlPoint,"n")[0] < 20:
-            brake()
-            print("Slow Down Brakes!")
+        #Saving Data
+        n_dist = check(processImage,FWControlPoint,"n")
+        s_dist = check(processImage,FWControlPoint,"s")
+        e_dist = check(processImage,RLControlPoint,"e")
+        w_dist = check(processImage,RLControlPoint,"w")
+        ne_dist = check(processImage,FWControlPoint,"ne")
+        nw_dist = check(processImage,FWControlPoint,"nw")
+        keys = key_check()
+        dists = [n_dist,s_dist,e_dist,w_dist,ne_dist,nw_dist]
+        print(keys,dists)
 
-        #If car crashes, take reverse
-        if 0 < check(processImage,FWControlPoint,"s")[0] < 30:
-            backward()
-            print("Reverse")
-        #For Slowing down
-        elif forwardPress > 5:
-            backward()
-            forwardPress = 0
-        #Forward obviously
-        else:
-            forward()
-            print("Forward")
-
-        #Condition for turning left
-        if 10 < check(processImage,RLControlPoint,"ne")[0] < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"e")[0] < RLThreshold:
-            pointX,pointY = check(processImage,RLControlPoint,"ne")[1],check(processImage,RLControlPoint,"ne")[2]
-            left()
-            print("Left")
-            
-            #for output display
-            cv2.line(processImage,(pointX,pointY),RLControlPoint,(0,0,255),2)
+        trainingData.append([dists,keys])
         
-        #Condition for turning right
-        if 10 < check(processImage,RLControlPoint,"nw")[0] < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"w")[0] < RLThreshold:
-            pointX,pointY = check(processImage,RLControlPoint,"nw")[1],check(processImage,RLControlPoint,"nw")[2]
-            right()
-            print("Right")
-            
-            #for output display
-            cv2.line(processImage,(pointX,pointY),RLControlPoint,(0,0,255),2)
+        if gameLoop % 300 == 0:
+            np.save(file_name,trainingData)
+            print("----------------------- SAVED -----------------------")
         
-        #Keep track of gameloop
         gameLoop += 1
     else:
-        #For proof that I am not driving
-        print("AI Paused")
+        #Not Recording
+        print("Not recording")
 
     #Showing Output
     cv2.circle(processImage,RLControlPoint,2,(0,0,255),3)
-    cv2.circle(processImage,FWControlPoint,2,(0,0,255),3)
+    cv2.circle(processImage,FWControlPoint,2,(0,255,0),3)
     cv2.imshow("Lines",processImage)
 
     #Pausing is important
