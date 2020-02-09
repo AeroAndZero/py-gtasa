@@ -89,6 +89,9 @@ while True:
     #Syntax :
     #[ [ [n,s,e,w],[w,a,s,d,space] ],... ]
 
+    # W = 0, A = 1, S = 3, D = 4, SPACE = 5
+    inputKeys = [0,0,0,0,0]
+
     #Getting gameplay footage
     img = grabscreen.grab_screen((0,0,640,480))
     line_image = np.zeros_like(img)
@@ -127,11 +130,19 @@ while True:
         nw_dist = check(processImage,FWControlPoint,"nw")
         keys = key_check()
 
-        #Don't want P key
-        try:
-            keys.remove('P')
-        except:
-            pass
+        for key in keys:
+            if key == 'W':
+                inputKeys[0] = 1
+            elif key == 'S':
+                inputKeys[1] = 1
+            elif key == 'A':
+                inputKeys[2] = 1
+            elif key == 'D':
+                inputKeys[3] = 1
+            elif key == ' ':
+                inputKeys[4] = 1
+            else:
+                pass
 
         dists = [n_dist,s_dist,e_dist,w_dist,ne_dist,nw_dist]
         print(keys,dists)
