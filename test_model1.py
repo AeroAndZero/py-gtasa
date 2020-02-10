@@ -210,9 +210,8 @@ while True:
       #      print("----------------------- SAVED -----------------------")
 
        # gameLoop += 1
-    #else:
-        # Not Recording
-     #   print("Not recording")
+    else:
+        print("Paused")
 
     # Showing Output
     cv2.circle(processImage, RLControlPoint, 2, (0, 0, 255), 3)
