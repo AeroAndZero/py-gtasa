@@ -1,5 +1,7 @@
 # Citation: Box Of Hats (https://github.com/Box-Of-Hats )
 
+#to take the key input from the user to feed into the neural network
+
 import win32api as wapi
 import time
 
@@ -13,4 +15,3 @@ def key_check():
         if wapi.GetAsyncKeyState(ord(key)):
             keys.append(key)
     return keys
- 
