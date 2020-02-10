@@ -182,6 +182,8 @@ while True:
         else:
             pass
 
+        print(prediction)
+
         #For Treshold :
         #if prediction[0]>0.7:
         #    forward()
@@ -203,13 +205,13 @@ while True:
 
     #  print(inputKeys, dists)
 
-       # trainingData.append([dists, inputKeys])
+    # trainingData.append([dists, inputKeys])
 
     #    if gameLoop % 300 == 0:
-     #       np.save(file_name, trainingData)
-      #      print("----------------------- SAVED -----------------------")
+    #       np.save(file_name, trainingData)
+    #      print("----------------------- SAVED -----------------------")
 
-       # gameLoop += 1
+    # gameLoop += 1
     else:
         print("Paused")
 
