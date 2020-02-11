@@ -18,6 +18,45 @@ FWControlPoint = (320, 340)
 model = multi1()
 model.load(MODEL_NAME)
 
+#Basic movement operations
+forwardPress = 0
+def forward():
+    global forwardPress
+    releaseExcept(W)
+    PressKey(W)
+    forwardPress += 1
+
+def right():
+    ReleaseKey(A)
+    PressKey(D)
+
+def left():
+    ReleaseKey(D)
+    PressKey(A)
+
+def backward():
+    releaseExcept(S)
+    PressKey(S)
+
+def brake():
+    PressKey(SPACE)
+    PressKey(S)
+
+def releaseAll():
+    ReleaseKey(A)
+    ReleaseKey(W)
+    ReleaseKey(D)
+    ReleaseKey(S)
+    ReleaseKey(SPACE)
+
+def releaseExcept(key):
+    for inputKey in inputKeys:
+        if key == inputKey:
+            pass
+        else:
+            ReleaseKey(inputKey)
+
+
 # returns distance between control point and first white pixel is detects
 def check(edgeImage, point, direction):
     pointX = point[0]
@@ -144,6 +183,7 @@ while True:
         w_dist = check(processImage, RLControlPoint, "w")
         ne_dist = check(processImage, FWControlPoint, "ne")
         nw_dist = check(processImage, FWControlPoint, "nw")
+        '''
         keys = key_check()
 
         for key in keys:
@@ -159,11 +199,16 @@ while True:
                 inputKeys[4] = 1
             else:
                 pass
+        '''
 
         dists = [n_dist, s_dist, e_dist, w_dist, ne_dist, nw_dist]
 
         pred = model.predict([dists])
-        prediction = np.rint(pred)
+        prediction = pred#np.rint(pred)
+        print("Original prediction : " + str(pred))
+        print(prediction)
+        
+        '''
         if prediction[0]==1:
             forward()
             print("Forward")
@@ -183,35 +228,29 @@ while True:
             pass
 
         print(prediction)
+        '''
 
         #For Treshold :
-        #if prediction[0]>0.7:
-        #    forward()
-        #    print("Forward")
-        #elif prediction[1]>0.41:
-        #    brake()
-        #    print("Slow Down Brakes!")
-        #elif prediction[2]>0.51:
-        #    left()
-        #   print("Left")
-        #elif prediction[3]>0.51:
-        #    right()
-        #    print("Right")
-        #elif prediction[4]>0.61:
-        #    backward()
-        #    print("Reverse")
-        #else:
-        #    pass
+        if prediction[0][0] > 0.98:
+            forward()
+            print("Forward")
+        elif prediction[0][1] > 0.1:
+            brake()
+            print("Slow Down Brakes!")
+        elif prediction[0][2] > 0.1:
+            left()
+            print("Left")
+        elif prediction[0][3] > 0.1:
+            right()
+            print("Right")
+        elif prediction[0][4] > 0.1:
+            backward()
+            print("Reverse")
+        else:
+            pass
 
-    #  print(inputKeys, dists)
-
-    # trainingData.append([dists, inputKeys])
-
-    #    if gameLoop % 300 == 0:
-    #       np.save(file_name, trainingData)
-    #      print("----------------------- SAVED -----------------------")
-
-    # gameLoop += 1
+        gameLoop += 1
+    
     else:
         print("Paused")
 
