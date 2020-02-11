@@ -162,7 +162,7 @@ while True:
 
         dists = [n_dist, s_dist, e_dist, w_dist, ne_dist, nw_dist]
 
-        pred = model.predict(dists)
+        pred = model.predict([dists])
         prediction = np.rint(pred)
         if prediction[0]==1:
             forward()
