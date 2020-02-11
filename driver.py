@@ -102,6 +102,14 @@ def check(edgeImage,point,direction):
 
     return distance,pointX,pointX
 
+def drawTemplateOutline(res,drawOnImage):
+    h,w = drawOnImage.shape[0],drawOnImage.shape[1]
+    threshold = 0.8
+    loc = np.where( res >= threshold)
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(drawOnImage, pt, (pt[0] + w, pt[1] + h), (0,255,255), 2)
+    return drawOnImage
+
 #Global variables
 time.sleep(3)   #For giving some time before script start
 paused = True   #For pausing the game
@@ -117,6 +125,10 @@ threshold = 30  # minimum number of votes (intersections in Hough grid cell)
 min_line_length = 20  # minimum number of pixels making up a line
 max_line_gap = 2  # maximum gap in pixels between connectable line segments
 
+targetIcon = cv2.imread('mapIcon.png',cv2.IMREAD_GRAYSCALE)
+th,tw = 10,10
+templateThreshold = 0.8
+
 while True:
     #Resetting control points
     pointX,pointY = RLControlPoint
@@ -126,28 +138,24 @@ while True:
 
     #Extracting Map
     gameMap_org = img[360:459,32:142]
-    edge = cv2.Canny(gameMap_org,70,20)
-
-    #line detection
-    lines = cv2.HoughLinesP(edge, rho, theta, threshold, np.array([]),
-                    min_line_length, max_line_gap)
-
-    #drawing lines on a different image
-    if lines is not None:
-        for line in lines:
-            for x1,y1,x2,y2 in line:
-                cv2.line(gameMap_org,(x1,y1),(x2,y2),(255,255,255),5)
-
+    gameMap_gray = cv2.cvtColor(gameMap_org,cv2.COLOR_BGR2GRAY)
+    
+    #Template Matching Target
+    targetMatch = cv2.matchTemplate(gameMap_gray,targetIcon,cv2.TM_CCOEFF_NORMED)
+    loc = np.where( targetMatch >= templateThreshold)   #Drawing Target
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(gameMap_org, pt, (pt[0] + tw, pt[1] + th), (0,255,255), 2)
 
     #Condition checking
     if not paused:
         #Not Paused
-        print("Running..")
+        #print("Running..")
         #Keep track of gameloop
         gameLoop += 1
     else:
         #For proof that I am not driving
-        print("AI Paused")
+        #print("AI Paused")
+        pass
 
     #Pausing is important
     keys = key_check()
@@ -162,6 +170,7 @@ while True:
                 ReleaseKey(D)
                 time.sleep(1)
 
+    cv2.circle(gameMap_org,(int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2)),1,(0,0,255),2)
     gameMap = cv2.resize(gameMap_org,(500,500))
     cv2.imshow("Map",gameMap)
 
