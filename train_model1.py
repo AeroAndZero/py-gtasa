@@ -4,7 +4,7 @@ import numpy as np
 model = multi1()
 MODEL_NAME = "Multi Layer Perceptron 1"
 
-data = np.load("training_data-1.npy", allow_pickle=True)
+data = np.load("training_data_v3.npy", allow_pickle=True)
 
 train = data[:-100]
 test = data[-100:]
