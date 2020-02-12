@@ -28,4 +28,3 @@ final_data = everythingElse
 shuffle(final_data)
 
 np.save('training_data_v2.npy', final_data)
-#"""
