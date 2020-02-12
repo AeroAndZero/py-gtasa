@@ -5,10 +5,6 @@ from random import shuffle
 
 train_data = np.load('training_data-1.npy', allow_pickle=True)
 
-df = pd.DataFrame(train_data)
-print(df.head())
-print(Counter(df[1].apply(str)))
-
 onlyForwards = []
 everythingElse = []
 
@@ -25,6 +21,13 @@ for data in train_data:
 
 final_data = everythingElse
 
+df = pd.DataFrame(final_data)
+print(df.head())
+print(Counter(df[1].apply(str)))
+df = pd.DataFrame(onlyForwards)
+print("Only Forwards : ")
+print(Counter(df[1].apply(str)))
+
 shuffle(final_data)
 
-np.save('training_data_v2.npy', final_data)
+np.save('training_data-balanced.npy', final_data)
