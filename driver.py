@@ -4,15 +4,29 @@ import grabscreen
 from directkeys import PressKey, ReleaseKey, W, A, S, D, SPACE
 import time
 from getkeys import key_check
+import mapper
+
 inputKeys = [W,A,S,D,SPACE]
 
 #RLControlPoint = (320,340)
 RLControlPoint = (320,360)
 FWControlPoint = (320,340)
 forwardPress = 0
-#Map Pixels :
-#   Top-left = 32,360
-#   bottom-right = 142,459
+
+#Global variables
+time.sleep(3)   #For giving some time before script start
+paused = True   #For pausing the game
+gameLoop = 0    #keeps track of total processed frames
+limit = 10      #for FWcontrolPoint part selection
+DiagonalThreshold = 45  #threshold for north-east and north-west direction
+RLThreshold = 50    #threshold for east and west direction
+
+#Line Detection Parameters
+rho = 1  # distance resolution in pixels of the Hough grid
+theta = np.pi / 180  # angular resolution in radians of the Hough grid
+threshold = 50  # minimum number of votes (intersections in Hough grid cell)
+min_line_length = 60  # minimum number of pixels making up a line
+max_line_gap = 10  # maximum gap in pixels between connectable line segments
 
 #Basic movement operations
 def forward():
@@ -34,8 +48,8 @@ def backward():
     PressKey(S)
 
 def brake():
+    releaseExcept(SPACE)
     PressKey(SPACE)
-    PressKey(S)
 
 def releaseAll():
     ReleaseKey(A)
@@ -102,60 +116,113 @@ def check(edgeImage,point,direction):
 
     return distance,pointX,pointX
 
-def drawTemplateOutline(res,drawOnImage):
-    h,w = drawOnImage.shape[0],drawOnImage.shape[1]
-    threshold = 0.8
-    loc = np.where( res >= threshold)
-    for pt in zip(*loc[::-1]):
-        cv2.rectangle(drawOnImage, pt, (pt[0] + w, pt[1] + h), (0,255,255), 2)
-    return drawOnImage
+def getLines(edge,rho = 1,theta = np.pi/180,threshold = 50,min_line_length=60,max_line_gap=10):
+    line_image = np.zeros_like(edge)
 
-#Global variables
-time.sleep(3)   #For giving some time before script start
-paused = True   #For pausing the game
-gameLoop = 0    #keeps track of total processed frames
-limit = 10      #for FWcontrolPoint part selection
-DiagonalThreshold = 45  #threshold for north-east and north-west direction
-RLThreshold = 50    #threshold for east and west direction
+    #Finding Lines
+    lines = cv2.HoughLinesP(edge, rho, theta, threshold, np.array([]),
+                    min_line_length, max_line_gap)
 
-#Line Detection Parameters
-rho = 1  # distance resolution in pixels of the Hough grid
-theta = np.pi / 180  # angular resolution in radians of the Hough grid
-threshold = 30  # minimum number of votes (intersections in Hough grid cell)
-min_line_length = 20  # minimum number of pixels making up a line
-max_line_gap = 2  # maximum gap in pixels between connectable line segments
+    #drawing lines on a different image
+    if lines is not None:
+        for line in lines:
+            for x1,y1,x2,y2 in line:
+                cv2.line(line_image,(x1,y1),(x2,y2),(255,255,255),5)
 
-targetIcon = cv2.imread('mapIcon.png',cv2.IMREAD_GRAYSCALE)
-th,tw = 10,10
-templateThreshold = 0.8
+    return line_image
 
-while True:
+def keepInLane(processImage):
+    global FWControlPoint,RLControlPoint,DiagonalThreshold,RLThreshold,forwardPress
+    
     #Resetting control points
     pointX,pointY = RLControlPoint
+
+    if check(processImage,FWControlPoint,"n")[0] < 30:
+        brake()
+        print("Brakes!")
+
+    #If car crashes, take reverse
+    if 0 < check(processImage,FWControlPoint,"s")[0] < 30: #or check(processImage,FWControlPoint,"n")[0] < 20:
+        backward()
+        print("Reverse")
+
+    #For Slowing down
+    elif forwardPress > 5:
+        backward()
+        forwardPress = 0
+
+    #Forward obviously
+    else:
+        forward()
+        print("Forward")
+
+    #Condition for turning left
+    if 10 < check(processImage,RLControlPoint,"ne")[0] < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"e")[0] < RLThreshold:
+        pointX,pointY = check(processImage,RLControlPoint,"ne")[1],check(processImage,RLControlPoint,"ne")[2]
+        left()
+        print("Left")
+        
+        #for output display
+        cv2.line(processImage,(pointX,pointY),RLControlPoint,(0,0,255),2)
+    
+    #Condition for turning right
+    if 10 < check(processImage,RLControlPoint,"nw")[0] < DiagonalThreshold or 10 < check(processImage,RLControlPoint,"w")[0] < RLThreshold:
+        pointX,pointY = check(processImage,RLControlPoint,"nw")[1],check(processImage,RLControlPoint,"nw")[2]
+        right()
+        print("Right")
+        
+        #for output display
+        cv2.line(processImage,(pointX,pointY),RLControlPoint,(0,0,255),2)
+
+    return processImage
+
+while True:
 
     #Getting gameplay footage
     img = grabscreen.grab_screen((0,0,640,480))
 
-    #Extracting Map
-    gameMap_org = img[360:459,32:142]
-    gameMap_gray = cv2.cvtColor(gameMap_org,cv2.COLOR_BGR2GRAY)
+    h,w = img.shape[0],img.shape[1]
+    blur = cv2.GaussianBlur(img,(3,3),1)
+
+    #Acutal edge detection
+    #edge = cv2.Canny(blur,100,120)     ----------
     
-    #Template Matching Target
-    targetMatch = cv2.matchTemplate(gameMap_gray,targetIcon,cv2.TM_CCOEFF_NORMED)
-    loc = np.where( targetMatch >= templateThreshold)   #Drawing Target
-    for pt in zip(*loc[::-1]):
-        cv2.rectangle(gameMap_org, pt, (pt[0] + tw, pt[1] + th), (0,255,255), 2)
+    #Just a handy variable
+    processImage = np.zeros_like(img)#getLines(edge)        ----------
 
     #Condition checking
     if not paused:
-        #Not Paused
-        #print("Running..")
+        #Keeps in lane
+        #processImage = keepInLane(processImage)    ----------
+
         #Keep track of gameloop
         gameLoop += 1
     else:
         #For proof that I am not driving
-        #print("AI Paused")
-        pass
+        print("AI Paused")
+    
+    try:
+        #Getting map
+        gameMap_org = mapper.getMap(img)
+        gameMap,targetPoint = mapper.findTarget(gameMap_org)
+
+        #Showing Output
+        #processImage = cv2.cvtColor(processImage,cv2.COLOR_GRAY2BGR)   ----------
+        cv2.circle(processImage,RLControlPoint,2,(0,0,255),3)
+        cv2.circle(processImage,FWControlPoint,2,(0,0,255),3)
+        cv2.imshow("Lines",processImage)
+
+        #Drawing Path
+        mapCenter = (int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2))
+        gameMap_org = mapper.findPath(gameMap_org,mapCenter,targetPoint,threshold=10,drawOn=True)
+
+        #Output map
+        cv2.circle(gameMap_org,targetPoint,1,(255,0,255),0)
+        
+        gameMap_resized = cv2.resize(gameMap_org,(500,500))
+        cv2.imshow("Game map",gameMap_resized)
+    except Exception as e:
+        print(e)
 
     #Pausing is important
     keys = key_check()
@@ -169,10 +236,6 @@ while True:
                 ReleaseKey(W)
                 ReleaseKey(D)
                 time.sleep(1)
-
-    cv2.circle(gameMap_org,(int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2)),1,(0,0,255),2)
-    gameMap = cv2.resize(gameMap_org,(500,500))
-    cv2.imshow("Map",gameMap)
 
     #Quiting opencv
     if cv2.waitKey(1) & 0xFF == ord('q'):
