@@ -18,6 +18,46 @@ FWControlPoint = (320, 340)
 model = multi1()
 model.load(MODEL_NAME)
 
+forwardPress = 0
+
+#Basic movement operations
+def forward():
+    global forwardPress
+    releaseExcept(W)
+    PressKey(W)
+    forwardPress += 1
+
+def right():
+    ReleaseKey(A)
+    PressKey(D)
+
+def left():
+    ReleaseKey(D)
+    PressKey(A)
+
+def backward():
+    releaseExcept(S)
+    PressKey(S)
+
+def brake():
+    PressKey(SPACE)
+    PressKey(S)
+
+def releaseAll():
+    ReleaseKey(A)
+    ReleaseKey(W)
+    ReleaseKey(D)
+    ReleaseKey(S)
+    ReleaseKey(SPACE)
+
+def releaseExcept(key):
+    for inputKey in inputKeys:
+        if key == inputKey:
+            pass
+        else:
+            ReleaseKey(inputKey)
+
+
 # returns distance between control point and first white pixel is detects
 def check(edgeImage, point, direction):
     pointX = point[0]
@@ -162,23 +202,23 @@ while True:
 
         dists = [n_dist, s_dist, e_dist, w_dist, ne_dist, nw_dist]
 
-        pred = model.predict(dists)
+        pred = model.predict([dists])
         prediction = np.rint(pred)
-        if prediction[0]==1:
+        if prediction[0][0]==1:
             forward()
             print("Forward")
-        elif prediction[1]==1:
-            brake()
-            print("Slow Down Brakes!")
-        elif prediction[2]==1:
+        elif prediction[0][1]==1:
             left()
             print("Left")
-        elif prediction[3]==1:
+        elif prediction[0][2]==1:
+            #backward()
+            print("reverse")
+        elif prediction[0][3]==1:
             right()
             print("Right")
-        elif prediction[0]==1:
-            backward()
-            print("Reverse")
+        elif prediction[0][4]==1:
+            #brake()
+            print("Slow Down Brakes!")
         else:
             pass
 
