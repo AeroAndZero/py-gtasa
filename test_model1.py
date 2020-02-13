@@ -203,7 +203,8 @@ while True:
         dists = [n_dist, s_dist, e_dist, w_dist, ne_dist, nw_dist]
 
         pred = model.predict([dists])
-        prediction = np.rint(pred)
+        prediction = pred#np.rint(pred)
+        '''
         if prediction[0][0]==1:
             forward()
             print("Forward")
@@ -221,38 +222,31 @@ while True:
             print("Slow Down Brakes!")
         else:
             pass
+        '''
 
         #For Treshold :
-        #if prediction[0]>0.7:
-        #    forward()
-        #    print("Forward")
-        #elif prediction[1]>0.41:
-        #    brake()
-        #    print("Slow Down Brakes!")
-        #elif prediction[2]>0.51:
-        #    left()
-        #   print("Left")
-        #elif prediction[3]>0.51:
-        #    right()
-        #    print("Right")
-        #elif prediction[4]>0.61:
-        #    backward()
-        #    print("Reverse")
-        #else:
-        #    pass
+        if prediction[0][0] > 0.95:
+            forward()
+            print("Forward")
+        elif prediction[0][1] > 0.41:
+            brake()
+            print("Slow Down Brakes!")
+        elif prediction[0][2] > 0.51:
+            left()
+            print("Left")
+        elif prediction[0][3] > 0.51:
+            right()
+            print("Right")
+        elif prediction[0][4] > 0.61:
+            backward()
+            print("Reverse")
+        else:
+            pass
 
-    #  print(inputKeys, dists)
-
-       # trainingData.append([dists, inputKeys])
-
-    #    if gameLoop % 300 == 0:
-     #       np.save(file_name, trainingData)
-      #      print("----------------------- SAVED -----------------------")
-
-       # gameLoop += 1
-    #else:
-        # Not Recording
-     #   print("Not recording")
+        gameLoop += 1
+    else:
+        #Paused
+        print("Paused")
 
     # Showing Output
     cv2.circle(processImage, RLControlPoint, 2, (0, 0, 255), 3)
