@@ -3,48 +3,37 @@ import pandas as pd
 from collections import Counter
 from random import shuffle
 
-train_data = np.load('training_data-1.npy', allow_pickle=True)
+train_data = np.load('training_data.npy')
 
-onlyForwards = []
-onlyLefts = []
-onlyRights = []
-everythingElse = []
+df = pd.DataFrame(train_data)
+print(df.head())
+print(Counter(df[1].apply(str)))
 
-forwardCount = 0
-leftCount = 0
-rightCount = 0
+lefts = []
+rights = []
+forwards = []
 
 shuffle(train_data)
 
 for data in train_data:
-    dists = data[0]
-    keys = data[1]
-    
-    if keys == [1,0,0,0,0]:
-        onlyForwards.append([dists,keys])
-        forwardCount += 1
-    elif keys == [0,1,0,0,0]:
-        onlyLefts.append([dists,keys])
-        leftCount += 1
-    elif keys == [0,0,0,1,0]:
-        onlyRights.append([dists,keys])
-        rightCount += 1
+    img = data[0]
+    choice = data[1]
+
+    if choice == [1,0,0]:
+        lefts.append([img,choice])
+    elif choice == [0,1,0]:
+        forwards.append([img,choice])
+    elif choice == [0,0,1]:
+        rights.append([img,choice])
     else:
-        everythingElse.append([dists,keys])
+        print('no matches')
 
 
-minCount = min(forwardCount,leftCount,rightCount)
+forwards = forwards[:len(lefts)][:len(rights)]
+lefts = lefts[:len(forwards)]
+rights = rights[:len(forwards)]
 
-onlyForwards = onlyForwards[:minCount]
-onlyLefts = onlyLefts[:minCount]
-onlyRights = onlyRights[:minCount]
-
-final_data = onlyForwards + onlyLefts + onlyRights + everythingElse
-
-df = pd.DataFrame(final_data)
-print(df.head())
-print(Counter(df[1].apply(str)))
-
+final_data = forwards + lefts + rights
 shuffle(final_data)
 
-np.save('training_data-balanced.npy', final_data)
+np.save('training_data.npy', final_data)
