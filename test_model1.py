@@ -24,6 +24,7 @@ forwardPress = 0
 def forward():
     global forwardPress
     releaseExcept(W)
+    ReleaseKey(S)
     PressKey(W)
     forwardPress += 1
 
@@ -205,45 +206,53 @@ while True:
         pred = model.predict([dists])
         prediction = pred#np.rint(pred)
         '''
-        if prediction[0][0]==1:
+        if prediction[0][0] ==1:
             forward()
             print("Forward")
-        elif prediction[0][1]==1:
+        elif prediction[0][1] ==1:
             left()
             print("Left")
-        elif prediction[0][2]==1:
+        elif prediction[0][2] ==1:
             #backward()
             print("reverse")
-        elif prediction[0][3]==1:
+        elif prediction[0][3] ==1:
             right()
             print("Right")
-        elif prediction[0][4]==1:
+        elif prediction[0][4] ==1:
             #brake()
             print("Slow Down Brakes!")
         else:
             pass
         '''
 
+        
         #For Treshold :
-        if prediction[0][0] > 0.95:
+        
+        if prediction[0][0] > 0.7:
+            ReleaseKey(S)
+            ReleaseKey(SPACE)
             forward()
             print("Forward")
-        elif prediction[0][1] > 0.41:
-            brake()
-            print("Slow Down Brakes!")
-        elif prediction[0][2] > 0.51:
+        elif prediction[0][2] > 0.95:
+            #ReleaseKey(W)
+            #ReleaseKey(SPACE)
+            #backward()
+            print("Trying Reverse")
+        
+        elif prediction[0][1] > 0.4:
             left()
             print("Left")
-        elif prediction[0][3] > 0.51:
+
+        elif prediction[0][3] > 0.5:
             right()
             print("Right")
-        elif prediction[0][4] > 0.61:
-            backward()
-            print("Reverse")
+
         else:
-            pass
+            ReleaseKey(A)
+            ReleaseKey(D)
 
         gameLoop += 1
+
     else:
         #Paused
         print("Paused")
