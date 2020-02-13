@@ -33,29 +33,47 @@ def getDistance(point1,point2):
                     + ( (point1[1] - point2[1])*(point1[1] - point2[1]) ) )
     return dist
 
+def getClosestPoint(points = [],refPoint = ()):
+    minDist = getDistance(points[0],refPoint)
+    minDistIndex = 0
+    for index,point in enumerate(points):
+        if minDist > getDistance(point,refPoint):
+            minDist = getDistance(point,refPoint)
+            minDistIndex = index
+
+    return points[minDistIndex]
+
 def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = False):
     currentPoint = startPoint
+    lastPoint = (0,0)
+    path = []
     h,w = image.shape[0],image.shape[1]
+    gridRange = 1
 
-    while (0 < currentPoint[0] < w) and (0 < currentPoint[1] < h) and currentPoint != endPoint:
-        minPoint = currentPoint
-        minPointDistance = getDistance(currentPoint,endPoint)
-        
+    while 0 <= currentPoint[0] < w and 0 <= currentPoint[1] < h and currentPoint != endPoint:
+        points = [(0,0)]
+        lastPoint = currentPoint
+
         for dy in range(-1,2,1):
             for dx in range(-1,2,1):
-                if 0 <= currentPoint[0]+dx < w and 0 <= currentPoint[1]+dy < h:
-                    if minPointDistance > getDistance((currentPoint[0]+dx,currentPoint[1]+dy),endPoint):
-                        minPointDistance = getDistance((currentPoint[0]+dx,currentPoint[1]+dy),endPoint)
-                        minPoint = (currentPoint[0]+dx,currentPoint[1]+dy)
-                else:
-                    break
-
-        currentPoint = minPoint
-        print("Current Point : ",currentPoint)
-        if drawOn:
-            cv2.circle(image,currentPoint,1,(255,0,255),2)
+                if dy == 0 and dx == 0:
+                    pass
+                if image[currentPoint[1]+dy,currentPoint[0]+dx][0] <= threshold and image[currentPoint[1]+dy,currentPoint[0]+dx][1] <= threshold and image[currentPoint[1]+dy,currentPoint[0]+dx][2] <= threshold:
+                    points.append((currentPoint[0]+dx,currentPoint[1]+dy))
+                    print("New Point attached")
+                
+        currentPoint = getClosestPoint(points,endPoint)
+        path.append(currentPoint)
+        
+    for point in path:
+        print(point)
+        cv2.circle(image,point,1,(255,0,255),2)
 
     return image
         
 if __name__ == "__main__":
-    print( getClosestPoint([(0,0),(1,1),(2,2)], (1.5,1.5)) )
+    image = cv2.imread('pathFindingTest.png')
+    newImage = findPath(image,startPoint= (99,41),endPoint = (108,67),drawOn=True)
+    cv2.imshow("what",newImage)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

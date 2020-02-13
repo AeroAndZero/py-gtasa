@@ -201,28 +201,25 @@ while True:
         #For proof that I am not driving
         print("AI Paused")
     
-    try:
-        #Getting map
-        gameMap_org = mapper.getMap(img)
-        gameMap,targetPoint = mapper.findTarget(gameMap_org)
+        #------------------- Getting map ---------------------
+    gameMap_org = mapper.getMap(img)
+    gameMap,targetPoint = mapper.findTarget(gameMap_org)
 
-        #Showing Output
-        #processImage = cv2.cvtColor(processImage,cv2.COLOR_GRAY2BGR)   ----------
-        cv2.circle(processImage,RLControlPoint,2,(0,0,255),3)
-        cv2.circle(processImage,FWControlPoint,2,(0,0,255),3)
-        cv2.imshow("Lines",processImage)
+    #Showing Output
+    #processImage = cv2.cvtColor(processImage,cv2.COLOR_GRAY2BGR)   ----------
+    cv2.circle(processImage,RLControlPoint,2,(0,0,255),3)
+    cv2.circle(processImage,FWControlPoint,2,(0,0,255),3)
+    cv2.imshow("Lines",processImage)
 
-        #Drawing Path
-        mapCenter = (int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2))
-        gameMap_org = mapper.findPath(gameMap_org,mapCenter,targetPoint,threshold=10,drawOn=True)
+    #Drawing Path
+    mapCenter = (int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2))
+    gameMap_org = mapper.findPath(gameMap_org,startPoint = mapCenter,endPoint = targetPoint,threshold=10,drawOn=True)
 
-        #Output map
-        cv2.circle(gameMap_org,targetPoint,1,(255,0,255),0)
-        
-        gameMap_resized = cv2.resize(gameMap_org,(500,500))
-        cv2.imshow("Game map",gameMap_resized)
-    except Exception as e:
-        print(e)
+    #Output map
+    #cv2.circle(gameMap_org,targetPoint,1,(255,0,255),0)
+    
+    gameMap_resized = cv2.resize(gameMap_org,(500,500))
+    cv2.imshow("Game map",gameMap_resized)
 
     #Pausing is important
     keys = key_check()
