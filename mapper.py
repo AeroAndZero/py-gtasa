@@ -48,32 +48,39 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
     lastPoint = (0,0)
     path = []
     h,w = image.shape[0],image.shape[1]
-    gridRange = 1
 
     while 0 <= currentPoint[0] < w and 0 <= currentPoint[1] < h and currentPoint != endPoint:
-        points = [(0,0)]
+        points = []
         lastPoint = currentPoint
 
         for dy in range(-1,2,1):
             for dx in range(-1,2,1):
                 if dy == 0 and dx == 0:
-                    pass
-                if image[currentPoint[1]+dy,currentPoint[0]+dx][0] <= threshold and image[currentPoint[1]+dy,currentPoint[0]+dx][1] <= threshold and image[currentPoint[1]+dy,currentPoint[0]+dx][2] <= threshold:
+                    continue
+                elif not(0 <= currentPoint[1]+dy < h and 0 <= currentPoint[0]+dx < w):
+                    break
+                elif (image[currentPoint[1]+dy,currentPoint[0]+dx][0] <= threshold) and (image[currentPoint[1]+dy,currentPoint[0]+dx][1] <= threshold) and (image[currentPoint[1]+dy,currentPoint[0]+dx][2] <= threshold):
                     points.append((currentPoint[0]+dx,currentPoint[1]+dy))
-                    print("New Point attached")
+                    print("got point.")
                 
+        if len(points) <= 0 :
+            print("No points found.")
+            break
         currentPoint = getClosestPoint(points,endPoint)
+        image[currentPoint[1],currentPoint[0]][0] = 255
+        image[currentPoint[1],currentPoint[0]][1] = 0
+        image[currentPoint[1],currentPoint[0]][2] = 255
         path.append(currentPoint)
         
     for point in path:
         print(point)
-        cv2.circle(image,point,1,(255,0,255),2)
 
     return image
         
 if __name__ == "__main__":
     image = cv2.imread('pathFindingTest.png')
-    newImage = findPath(image,startPoint= (99,41),endPoint = (108,67),drawOn=True)
+    newImage = findPath(image,startPoint= (45,35),endPoint = (280,355),drawOn=True)
+    newImage = cv2.resize(newImage,(500,500))
     cv2.imshow("what",newImage)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

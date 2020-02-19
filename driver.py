@@ -14,7 +14,7 @@ FWControlPoint = (320,340)
 forwardPress = 0
 
 #Global variables
-time.sleep(3)   #For giving some time before script start
+time.sleep(7)   #For giving some time before script start
 paused = True   #For pausing the game
 gameLoop = 0    #keeps track of total processed frames
 limit = 10      #for FWcontrolPoint part selection
@@ -212,11 +212,12 @@ while True:
     cv2.imshow("Lines",processImage)
 
     #Drawing Path
-    mapCenter = (int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2))
-    gameMap_org = mapper.findPath(gameMap_org,startPoint = mapCenter,endPoint = targetPoint,threshold=10,drawOn=True)
+    mapCenter = (int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2) - 5)
+    gameMap_org = mapper.findPath(gameMap,startPoint = mapCenter,endPoint = targetPoint,threshold=30,drawOn=True)
 
     #Output map
-    #cv2.circle(gameMap_org,targetPoint,1,(255,0,255),0)
+    cv2.circle(gameMap_org,mapCenter,1,(0,0,255),0)
+    cv2.circle(gameMap_org,targetPoint,1,(255,0,255),0)
     
     gameMap_resized = cv2.resize(gameMap_org,(500,500))
     cv2.imshow("Game map",gameMap_resized)
