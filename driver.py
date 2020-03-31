@@ -197,15 +197,15 @@ while True:
     #Pausing is important
     keys = key_check()
     if 'P' in keys:
-            if paused:
-                paused = False
-                time.sleep(1)
-            else:
-                paused = True
-                ReleaseKey(A)
-                ReleaseKey(W)
-                ReleaseKey(D)
-                time.sleep(1)
+        if paused:
+            paused = False
+            time.sleep(1)
+        else:
+            paused = True
+            ReleaseKey(A)
+            ReleaseKey(W)
+            ReleaseKey(D)
+            time.sleep(1)
 
     #Quiting opencv
     if cv2.waitKey(1) & 0xFF == ord('q'):
