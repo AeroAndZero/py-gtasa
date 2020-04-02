@@ -114,7 +114,7 @@ threshold = 50  # minimum number of votes (intersections in Hough grid cell)
 min_line_length = 60  # minimum number of pixels making up a line
 max_line_gap = 10  # maximum gap in pixels between connectable line segments
 
-while True:
+while __name__ == '__main__':
     #Resetting control points
     pointX,pointY = RLControlPoint
 
