@@ -82,7 +82,7 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
         
 if __name__ == "__main__":
     image = cv2.imread('pathFindingTest.png')
-    newImage = findPath(image,startPoint= (150,230),endPoint = (204,180),drawOn=True)
+    newImage = findPath(image,startPoint= (104,22),endPoint = (282,335),drawOn=True)
     newImage = cv2.resize(newImage,(500,500))
     cv2.imshow("Mapper 1",newImage)
     cv2.waitKey(0)
