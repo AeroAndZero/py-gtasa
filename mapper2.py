@@ -9,16 +9,17 @@ def getDistance(point1,point2):
 
 def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = False):
 	tempPoint = [startPoint[0],startPoint[1]]
+	destination = [endPoint[0],endPoint[1]]
 	oldPoint = [0,0]
 	pathPoints = []
 	pathPointCosts = []
 
 	#Path Finding
-	while oldPoint != tempPoint:
+	while oldPoint != tempPoint and tempPoint != destination:
 		#init
 		pathPoints = []
 		oldPoint = tempPoint
-		pathPointCosts = []
+		pathPointFCosts = []
 
 		#Finding Path Points
 		for dy in range(-1,2,1):
@@ -34,13 +35,13 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
 		if len(pathPoints) != 0:
 			for i in range(len(pathPoints)):
 				#Actual A* Path Finding Algo
-				GCost = getDistance(pathPoints[i],endPoint)
-				HCost = getDistance(pathPoints[i],startPoint)
-				pathPointCosts.append(GCost + HCost)
+				GCost = getDistance(pathPoints[i],tempPoint)
+				HCost = getDistance(pathPoints[i],endPoint)
+				pathPointFCosts.append(HCost + GCost)
 
-			#Assinging/Moving to next Pixel
-			minCost = min(pathPointCosts)
-			minCostIndex = pathPointCosts.index(minCost)
+			#Getting Minimum FCost And Moving on that pixel
+			minCost = min(pathPointFCosts)
+			minCostIndex = pathPointFCosts.index(minCost)
 			tempPoint = pathPoints[minCostIndex]
 
 		#Drawing the Path
@@ -52,7 +53,7 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
 
 if __name__ == '__main__':
 	image = cv2.imread('pathFindingTest.png')
-	newImage = findPath(image,startPoint= (150,230),endPoint = (204,180),drawOn=True)
+	newImage = findPath(image,startPoint= (104,22),endPoint = (282,335),drawOn=True)
 	newImage = cv2.resize(newImage,(500,500))
 	cv2.imshow("Mapper 2",newImage)
 	cv2.waitKey(0)
