@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import math
 
+image = 0
+
 #returns distance between two points
 def getDistance(point1,point2):
     dist = math.sqrt( ( (point1[0] - point2[0])*(point1[0] - point2[0]) ) 
@@ -9,36 +11,41 @@ def getDistance(point1,point2):
     return dist
 
 #Scans the pixels around a specific pixel
-def getPathPoints(image,pixel,threshold=[10,10,10]):
-    pathPoints = []
+def getSurroundingNodes(image,node):
+    threshold=[10,10,10]
+    SurroundingNodes = []
+    pixel = node.position
     for dy in range(-1,2,1):
         for dx in range(-1,2,1):
             if (dy == 0 and dx == 0) or (not((0 < pixel[0]+dx < image.shape[1]) and (0 < pixel[1]+dy < image.shape[0]))):
                 continue
             if (image[pixel[1]+dy,pixel[0]+dx][0] <= threshold[0]) and (image[pixel[1]+dy,pixel[0]+dx][1] <= threshold[1]) and (image[pixel[1]+dy,pixel[0]+dx][2] <= threshold[2]):
-                pathPoints.append([pixel[0]+dx,pixel[1]+dy])
+                SurroundingNodes.append(Node(parent=node,position=[pixel[0]+dx,pixel[1]+dy]))
 
-    return pathPoints
+    return SurroundingNodes
 
 class Node():
     def __init__(self, parent=None, position=None):
+        global image
         self.parent = parent
         self.position = position
 
         self.g = 0
-        self.h = 0
+        self.h = 99999
+        self.f = 0
+        self.child = []
 
     def changeParent(self, other):
         return self.parent == other.parent
 
 def sortNodes(nodes):
     for i in range(len(nodes)):
-        minFCost = nodes[i].g + nodes[i].h
+        minFCost = nodes[i].f
         minFCostIndex = i
 
         for j in range(i,len(nodes)):
-            if (nodes[j].g + nodes[j].h) < minFCost:
-                minFCost = nodes[j].g + nodes[j].h
+            if (nodes[j].f) < minFCost:
+                minFCost = nodes[j].f
                 minFCostIndex = j
         tempNode = nodes[i]
         nodes[i] = nodes[minFCostIndex]
@@ -46,52 +53,76 @@ def sortNodes(nodes):
 
     return nodes
 
-def findPath(image,currentNode=Node(parent=None,position=(0,0)),endPoint=(0,0)):
-    #Setup
-    currentNode.g = getDistance(currentNode.position,currentNode.parent.position)
-    currentNode.h = getDistance(currentNode.position,endPoint)
-    children = []
+def getMinF(nodes):
+    tempF = []
+    for node in nodes:
+        tempF.append(node.f)
 
-    if currentNode.position == endPoint:
-        print("Path Found")
-        return 0
-    else:
-        print("Path Not Found yet. Searching again")
+    minF = min(tempF)
+    minFIndex = tempF.index(minF)
+    return nodes[minFIndex]
 
-    pathPoints = getPathPoints(image,currentNode.position)
+def findPath(image,startPoint=(0,0),endPoint=(0,0)):
+    pathFound = False
 
-    for i in range(len(pathPoints)):
-        children.append(Node(parent = currentNode,position=pathPoints[i]))
-        children[i].g = getDistance(currentNode.position,children[i].position) + currentNode.g
-        children[i].h = getDistance(children[i].position,endPoint)
+    startNode = Node(parent=None,position=startPoint)
+    startNode.g = 0
+    startNode.h = getDistance(startNode.position,endPoint)
+    startNode.f = startNode.g + startNode.h
 
-    if len(children) > 0:
-        children = sortNodes(children)
-        findPath(image,currentNode=children[i],endPoint=endPoint)
-    else:
-        print("No Childrens")
-        return
+    openList = [startNode]
+    closedList = []
 
+    while len(openList) != 0 and not pathFound:
+        q = getMinF(openList)
+        
+        image[q.position[1],q.position[0]][0] = 0
+        image[q.position[1],q.position[0]][1] = 255
+        image[q.position[1],q.position[0]][2] = 0
+
+        q.child = getSurroundingNodes(image,q)
+
+        for successor in q.child:
+            if successor.position[0] == endPoint[0] and successor.position[1] == endPoint[1]:
+                print("Path Found!")
+                pathFound = True
+                lastSuccessor = successor
+            else:
+                print("Path Not Found, Researching")
+
+            successor.g = q.g + getDistance(successor.position,q.position)
+            successor.h = getDistance(successor.position,endPoint)
+            successor.f = successor.g + successor.h
+
+            for node in openList:
+                if node.position == successor.position and node.f < successor.f:
+                    continue
+            
+            for node in closedList:
+                if node.position == successor.position and node.f < successor.f:
+                    continue
+            
+            openList.append(successor)
+
+        openList.remove(q)
+        closedList.append(q)
+
+    if pathFound:
+        while lastSuccessor.parent != None:
+            image[lastSuccessor.position[1],lastSuccessor.position[0]][0] = 255
+            image[lastSuccessor.position[1],lastSuccessor.position[0]][1] = 0
+            image[lastSuccessor.position[1],lastSuccessor.position[0]][2] = 255
+            lastSuccessor = lastSuccessor.parent
+
+    return image
 
 if __name__ == '__main__':
-    '''
-    nodes = []
-    for i in range(10,0,-1):
-        nodes.append(Node(parent=None,position=None))
-        nodes[10-i].g = i
-        nodes[10-i].h = i
-
-    newNodes = sortNodes(nodes)
-    for node in newNodes:
-        print(node.g + node.h)
-    '''
     image = cv2.imread('pathFindingTest.png')
-    startNode = Node(parent=None,position=(103,40))
-    endPoint = (103,41)
-    newImage = findPath(image,currentNode=Node(parent=startNode,position=startNode.position),endPoint = endPoint)
-    '''
-    newImage = cv2.resize(newImage,(500,500))
-    cv2.imshow("Mapper 2",newImage)
+    image = cv2.resize(image,(100,100))
+    startPoint = (59,18)
+    endPoint = (69,69)
+    image = findPath(image,startPoint,endPoint)
+    image = cv2.resize(image,(500,500))
+    cv2.imshow("Mapper 3",image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    '''
