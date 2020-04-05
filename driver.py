@@ -5,6 +5,7 @@ from directkeys import PressKey, ReleaseKey, W, A, S, D, SPACE
 import time
 from getkeys import key_check
 import mapper
+import mapper2 as pathFinder
 
 inputKeys = [W,A,S,D,SPACE]
 
@@ -213,7 +214,7 @@ while True:
 
     #Drawing Path
     mapCenter = (int(gameMap_org.shape[1]/2),int(gameMap_org.shape[0]/2) - 5)
-    gameMap_org = mapper.findPath(gameMap,startPoint = mapCenter,endPoint = targetPoint,threshold=30,drawOn=True)
+    gameMap_org = pathFinder.findPath(gameMap,startPoint = mapCenter,endPoint = targetPoint,threshold=30,drawOn=True)
 
     #Output map
     cv2.circle(gameMap_org,mapCenter,1,(0,0,255),0)

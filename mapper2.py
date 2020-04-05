@@ -3,9 +3,9 @@ import numpy as np
 import math
 
 def getDistance(point1,point2):
-    dist = math.sqrt( ( (point1[0] - point2[0])*(point1[0] - point2[0]) ) 
-                    + ( (point1[1] - point2[1])*(point1[1] - point2[1]) ) )
-    return dist
+	dist = math.sqrt( ( (point1[0] - point2[0])*(point1[0] - point2[0]) ) 
+					+ ( (point1[1] - point2[1])*(point1[1] - point2[1]) ) )
+	return dist
 
 def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = False):
 	tempPoint = [startPoint[0],startPoint[1]]
@@ -53,7 +53,7 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
 
 if __name__ == '__main__':
 	image = cv2.imread('pathFindingTest.png')
-	newImage = findPath(image,startPoint= (104,22),endPoint = (282,335),drawOn=True)
+	newImage = findPath(image,startPoint= (282,335),endPoint = (104,22),drawOn=True)
 	newImage = cv2.resize(newImage,(500,500))
 	cv2.imshow("Mapper 2",newImage)
 	cv2.waitKey(0)
