@@ -5,9 +5,10 @@ from directkeys import PressKey, ReleaseKey, W, A, S, D, SPACE
 import time
 from getkeys import key_check
 import os
-from model1 import multi1
+import keras
+import tensorflow as tf
 
-MODEL_NAME ="Multi Layer Perceptron 1"
+MODEL_NAME ="keras_model_test.model"
 
 inputKeys = [W, A, S, D, SPACE]
 
@@ -15,8 +16,7 @@ inputKeys = [W, A, S, D, SPACE]
 RLControlPoint = (320, 360)
 FWControlPoint = (320, 340)
 
-model = multi1()
-model.load(MODEL_NAME)
+model = tf.keras.models.load_model('keras_model_test.model')
 
 forwardPress = 0
 
@@ -134,14 +134,6 @@ threshold = 50  # minimum number of votes (intersections in Hough grid cell)
 min_line_length = 60  # minimum number of pixels making up a line
 max_line_gap = 10  # maximum gap in pixels between connectable line segments
 
-trainingData = []
-
-fileIndex = 1
-file_name = 'training_data-{}.npy'.format(fileIndex)
-while os.path.isfile(file_name):
-    fileIndex += 1
-    file_name = 'training_data-{}.npy'.format(fileIndex)
-
 while True:
     # Syntax :
     # [ [ [n,s,e,w,ne,nw],[w,a,s,d,space] ],... ]
@@ -203,7 +195,7 @@ while True:
 
         dists = [n_dist, s_dist, e_dist, w_dist, ne_dist, nw_dist]
 
-        pred = model.predict([dists])
+        pred = model.predict([[dists]])
         prediction = pred#np.rint(pred)
         '''
         if prediction[0][0] ==1:
