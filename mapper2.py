@@ -7,18 +7,19 @@ def getDistance(point1,point2):
 					+ ( (point1[1] - point2[1])*(point1[1] - point2[1]) ) )
 	return dist
 
-def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = False):
+def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 100,drawOn = False):
 	tempPoint = [startPoint[0],startPoint[1]]
 	destination = [endPoint[0],endPoint[1]]
 	oldPoint = [0,0]
 	pathPoints = []
 	pathPointCosts = []
+	history = []
 
 	#Path Finding
-	while oldPoint != tempPoint and tempPoint != destination:
+	while tempPoint != destination:
 		#init
 		pathPoints = []
-		oldPoint = tempPoint
+		history.append(tempPoint)
 		pathPointFCosts = []
 
 		#Finding Path Points
@@ -30,6 +31,11 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
 				if (0 < tempPoint[0] + dx < image.shape[1]) and (0 < tempPoint[1] + dy < image.shape[0]):
 					if (image[tempPoint[1]+dy,tempPoint[0]+dx][0] <= threshold) and (image[tempPoint[1]+dy,tempPoint[0]+dx][1] <= threshold) and (image[tempPoint[1]+dy,tempPoint[0]+dx][2] <= threshold):
 						pathPoints.append([tempPoint[0]+dx,tempPoint[1]+dy])
+
+		for point in pathPoints:
+			if point in history:
+				pathPoints.remove(point)
+				print("Something Removed")
 
 		#Getting The Route
 		if len(pathPoints) != 0:
@@ -43,6 +49,8 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
 			minCost = min(pathPointFCosts)
 			minCostIndex = pathPointFCosts.index(minCost)
 			tempPoint = pathPoints[minCostIndex]
+		else:
+			break
 
 		#Drawing the Path
 		image[tempPoint[1],tempPoint[0]][0] = 255
@@ -53,8 +61,13 @@ def findPath(image,startPoint = (0,0),endPoint = (0,0),threshold = 10,drawOn = F
 
 if __name__ == '__main__':
 	image = cv2.imread('pathFindingTest.png')
-	newImage = findPath(image,startPoint= (282,335),endPoint = (104,22),drawOn=True)
-	newImage = cv2.resize(newImage,(500,500))
-	cv2.imshow("Mapper 2",newImage)
+	#image = cv2.resize(image,(100,100))
+	#startPoint = (23,56)
+	#endPoint = (78,74)
+	startPoint = (190,216)
+	endPoint = (291,279)
+	image = findPath(image,startPoint,endPoint)
+	image = cv2.resize(image,(500,500))
+	cv2.imshow("Mapper 3",image)
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()

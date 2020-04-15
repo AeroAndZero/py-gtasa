@@ -12,7 +12,7 @@ def getDistance(point1,point2):
 
 #Scans the pixels around a specific pixel
 def getSurroundingNodes(image,node):
-    threshold=[10,10,10]
+    threshold=[50,50,50]
     SurroundingNodes = []
     pixel = node.position
     for dy in range(-1,2,1):
@@ -76,30 +76,34 @@ def findPath(image,startPoint=(0,0),endPoint=(0,0)):
     while len(openList) != 0 and not pathFound:
         q = getMinF(openList)
         
+        '''
         image[q.position[1],q.position[0]][0] = 0
         image[q.position[1],q.position[0]][1] = 255
         image[q.position[1],q.position[0]][2] = 0
+        '''
 
         q.child = getSurroundingNodes(image,q)
 
         for successor in q.child:
+            skipThis = False
             if successor.position[0] == endPoint[0] and successor.position[1] == endPoint[1]:
-                print("Path Found!")
+                #print("Path Found!")
                 pathFound = True
                 lastSuccessor = successor
             else:
-                print("Path Not Found, Researching")
+                pass
+                #print("Path Not Found, Researching")
 
             successor.g = q.g + getDistance(successor.position,q.position)
             successor.h = getDistance(successor.position,endPoint)
             successor.f = successor.g + successor.h
 
-            for node in openList:
-                if node.position == successor.position and node.f < successor.f:
+            if successor in openList:
+                if openList[openList.index(successor)].f < successor.f:
                     continue
             
-            for node in closedList:
-                if node.position == successor.position and node.f < successor.f:
+            if successor in closedList:
+                if closedList[closedList.index(successor)].f < successor.f:
                     continue
             
             openList.append(successor)
@@ -119,8 +123,10 @@ def findPath(image,startPoint=(0,0),endPoint=(0,0)):
 if __name__ == '__main__':
     image = cv2.imread('pathFindingTest.png')
     image = cv2.resize(image,(100,100))
-    startPoint = (59,18)
-    endPoint = (69,69)
+    #startPoint = (23,56)
+    #endPoint = (78,74)
+    startPoint = (43,33)
+    endPoint = (51,58)
     image = findPath(image,startPoint,endPoint)
     image = cv2.resize(image,(500,500))
     cv2.imshow("Mapper 3",image)
