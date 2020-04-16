@@ -8,15 +8,13 @@ import os
 import keras
 import tensorflow as tf
 
-MODEL_NAME ="keras_model_test.model"
-
 inputKeys = [W, A, S, D, SPACE]
 
 # RLControlPoint = (320,340)
 RLControlPoint = (320, 360)
 FWControlPoint = (320, 340)
 
-model = tf.keras.models.load_model('keras_model_test.model')
+model = tf.keras.models.load_model('keras_model_test_5.model')
 
 forwardPress = 0
 
@@ -225,17 +223,17 @@ while True:
             ReleaseKey(SPACE)
             forward()
             print("Forward")
-        elif prediction[0][2] > 0.95:
+        elif prediction[0][2] > 0.7:
             #ReleaseKey(W)
             #ReleaseKey(SPACE)
             #backward()
             print("Trying Reverse")
         
-        elif prediction[0][1] > 0.4:
+        elif prediction[0][1] > 0.7:
             left()
             print("Left")
 
-        elif prediction[0][3] > 0.5:
+        elif prediction[0][3] > 0.7:
             right()
             print("Right")
 
